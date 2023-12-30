@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <title>ROT13 Cryptography</title>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>APLIKASI KRIPTOGRAFI</h1>
+            <!-- <img src="buku.jpg"> -->
+        </header>
+        <div class="form-container">
+            <label for="algorithm">Pilih Algoritma:</label>
+            <select name="algorithm" id="algorithm" required>
+                <option value="rot13">ROT13</option>
+                <option value="caesar">Caesar Cipher</option>
+                <option value="vigenere">Vigenere Cipher</option>
+            </select>
+
+            <label for="key">Enter Key:</label>
+            <input type="text" name="key" id="key"><br>
+
+            <h2>Input Text:</h2>
+            <textarea id="input_text" name="input_text" placeholder="Masukkan text disini" rows="4" cols="100"></textarea><br>
+
+            <label for="fileInput">Upload File .txt:</label>
+            <input type="file" id="fileInput" name="fileInput" accept=".txt"><br>
+
+            <input type="radio" id="encrypt" name="action" value="encrypt" checked>
+            <label for="encrypt">Enkripsi</label><br>
+            <input type="radio" id="decrypt" name="action" value="decrypt">
+            <label for="decrypt">Deskripsi</label><br>
+            <button onclick="processForm()" class="submit-btn">SUBMIT</button>
+        </div>
+
+        <div class="form-container">
+            <h2>Result:</h2>
+            <textarea id="output" rows="4" cols="100" readonly></textarea>
+        </div>
+         <footer>
+             &copy; Saffanah Nur 2023 Cryptography App. All rights reserved.
+         </footer>
+    </div>
+
+    <script>
+        function rot13(text) {
+            let result = "";
+            const length = text.length;
+
+            for (let i = 0; i < length; i++) {
+                let char = text[i];
+
+                if (char.match(/[A-Za-z]/)) {
+                    const shift = char.charCodeAt(0) > 90 ? 97 : 65;
+                    result += String.fromCharCode((char.charCodeAt(0) - shift + 13) % 26 + shift);
+                } else {
+                    result += char;
+                }
+            }
+
+            return result;
+        }
+
+        function caesarCipherEncrypt(text, key) {
+            let encryptedText = '';
+            const shift = key % 26;
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                if (char.match(/[A-Za-z]/)) {
+                    const isUpperCase = char === char.toUpperCase();
+                    char = String.fromCharCode(((char.charCodeAt(0) - (isUpperCase ? 65 : 97) + shift) % 26) + (isUpperCase ? 65 : 97));
+                }
+                encryptedText += char;
+            }
+            return encryptedText;
+        }
+
+        function vigenereCipher(text, key, encrypt) {
+    let result = '';
+    const keyLength = key.length;
+    let keyIndex = 0;
+
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+
+        if (char.match(/[A-Za-z]/)) {
+            const isUpperCase = char === char.toUpperCase();
+            const shift = key[keyIndex].toUpperCase().charCodeAt(0) - 65;
+
+            if (encrypt) {
+                char = String.fromCharCode(((char.charCodeAt(0) + shift - (isUpperCase ? 65 : 97)) % 26) + (isUpperCase ? 65 : 97));
+            } else {
+                // Adjust the shift calculation for decryption
+                char = String.fromCharCode(((char.charCodeAt(0) - shift - (isUpperCase ? 65 : 97) + 26) % 26) + (isUpperCase ? 65 : 97));
+            }
+
+            keyIndex = (keyIndex + 1) % keyLength;
+        }
+
+        result += char;
+    }
+
+    return result;
+}
+
+        function processForm() {
+            const inputText = document.getElementById("input_text").value;
+            const algorithm = document.getElementById("algorithm").value;
+            const action = document.querySelector('input[name="action"]:checked').value;
+            const key = document.getElementById("key").value;
+            const fileInput = document.getElementById("fileInput");
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const inputTextFromFile = e.target.result;
+                    const cipherTexts = inputTextFromFile.split('\n'); // Memisahkan teks berdasarkan baris baru
+
+                    let result = '';
+                    cipherTexts.forEach(cipherText => {
+                        const decryptedText = processInputText(cipherText.trim(), algorithm, action, key);
+                        result += decryptedText + '\n'; // Menambahkan teks yang sudah di-dekripsi dengan baris baru setelahnya
+                    });
+
+                    document.getElementById("output").value = result.trim(); // Menghilangkan spasi di awal atau akhir
+                };
+
+                reader.readAsText(file);
+            } else {
+                const result = processInputText(inputText, algorithm, action, key);
+                document.getElementById("output").value = result;
+            }
+        }
+
+
+        function processInputText(inputText, algorithm, action, key) {
+            let result = "";
+
+            if (algorithm === "rot13") {
+                result = action === "encrypt" ? rot13(inputText) : rot13(inputText);
+            } else if (algorithm === "caesar") {
+                const numericKey = parseInt(key, 10);
+                result = action === "encrypt" ? caesarCipherEncrypt(inputText, numericKey) : caesarCipherEncrypt(inputText, 26 - numericKey);
+            } else if (algorithm === "vigenere") {
+                result = action === "encrypt" ? vigenereCipher(inputText, key, true) : vigenereCipher(inputText, key, false);
+            }
+
+            return result;
+        }
+    </script>
+  
+</body>
+</html>

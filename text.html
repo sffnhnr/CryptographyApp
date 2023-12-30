@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" type="text/css" href="rot13.css">
+    <title>ROT13 Cryptography</title>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>Aplikasi Kriptografi ROT13 & Caesar Cipher</h1>
+            <img src="buku.jpg">
+        </header>
+        <div class="form-container">
+            <label for="algorithm">Pilih Algoritma:</label>
+            <select name="algorithm" id="algorithm" required>
+                <option value="rot13">ROT13</option>
+                <option value="caesar">Caesar Cipher</option>
+                <option value="caesar">Vigenere Cipher</option>
+            </select>
+
+            <label for="key">Enter Key:</label>
+            <input type="number" name="key" id="key"><br>
+
+            <h2>Input Text:</h2>
+            <textarea id="input_text" name="input_text" placeholder="Masukkan text disini" rows="4" cols="100"></textarea><br>
+
+            <input type="radio" id="encrypt" name="action" value="encrypt" checked>
+            <label for="encrypt">Enkripsi</label><br>
+            <input type="radio" id="decrypt" name="action" value="decrypt">
+            <label for="decrypt">Deskripsi</label><br>
+
+            <button onclick="processForm()" class="submit-btn">SUBMIT</button>
+        </div>
+
+        <div class="form-container">
+            <h2>Result:</h2>
+            <textarea id="output" rows="4" cols="100" readonly></textarea>
+        </div>
+    </div>
+
+    <script>
+        function rot13(text) {
+            let result = "";
+            const length = text.length;
+
+            for (let i = 0; i < length; i++) {
+                let char = text[i];
+
+                if (char.match(/[A-Za-z]/)) {
+                    const shift = char.charCodeAt(0) > 90 ? 97 : 65;
+                    result += String.fromCharCode((char.charCodeAt(0) - shift + 13) % 26 + shift);
+                } else {
+                    result += char;
+                }
+            }
+
+            return result;
+        }
+
+        function caesarCipherEncrypt(text, key) {
+            let encryptedText = '';
+            const shift = key % 26;
+
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                if (char.match(/[A-Za-z]/)) {
+                    const isUpperCase = char === char.toUpperCase();
+                    char = String.fromCharCode(((char.charCodeAt(0) - (isUpperCase ? 65 : 97) + shift) % 26) + (isUpperCase ? 65 : 97));
+                }
+                encryptedText += char;
+            }
+            return encryptedText;
+        }
+
+        function processForm() {
+            const inputText = document.getElementById("input_text").value;
+            const algorithm = document.getElementById("algorithm").value;
+            const action = document.querySelector('input[name="action"]:checked').value;
+            const key = parseInt(document.getElementById("key").value, 10);
+            let result = "";
+
+            if (algorithm === "rot13") {
+                result = action === "encrypt" ? rot13(inputText) : rot13(inputText);
+            } else if (algorithm === "caesar") {
+                result = action === "encrypt" ? caesarCipherEncrypt(inputText, key) : caesarCipherEncrypt(inputText, 26 - key);
+            }
+
+            document.getElementById("output").value = result;
+        }
+    </script>
+</body>
+</html>
